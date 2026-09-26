@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "914739351348",
+    "project_id": "eelu-student-planner",
+    "storage_bucket": "eelu-student-planner.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:914739351348:android:7ab7b1e255ff0a8a461f61",
+        "android_client_info": {
+          "package_name": "com.example.eelu_student"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "914739351348-1g8tdfivkf5dn0ipplbljio27m21n1f2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9N23tejXnkcnKcjDkpTlCNJDZFzfu4hA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "914739351348-1g8tdfivkf5dn0ipplbljio27m21n1f2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
