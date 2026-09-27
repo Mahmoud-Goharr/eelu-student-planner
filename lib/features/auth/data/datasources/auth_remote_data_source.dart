@@ -117,9 +117,7 @@ class AuthRemoteDataSource {
   // Complete Student Registration
   // ============================================================
 
-  Future<void> completeStudentProfile({
-    required String studentId,
-  }) async {
+  Future<void> completeStudentProfile({required String studentId}) async {
     final user = currentUser;
 
     if (user == null) {
@@ -221,9 +219,40 @@ class AuthRemoteDataSource {
       return;
     }
 
+    /*
+     * IMPORTANT:
+     * Read the current avatar from the database first.
+     *
+     * If the student already selected a custom avatar from the app,
+     * we must NOT replace it with Google's avatar after login.
+     */
+    final existingProfile = await _supabase.client
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', user.id)
+        .maybeSingle();
+
+    final existingAvatar = existingProfile?['avatar_url']?.toString().trim();
+
     final updateData = <String, dynamic>{'name': resolvedName};
 
-    if (resolvedAvatar != null && resolvedAvatar.isNotEmpty) {
+    /*
+     * Only save Google's avatar if the student does not already
+     * have an avatar saved in the profile.
+     *
+     * This means:
+     *
+     * No existing avatar
+     *      ↓
+     * Google avatar can be saved.
+     *
+     * Existing custom avatar
+     *      ↓
+     * Keep it unchanged.
+     */
+    if ((existingAvatar == null || existingAvatar.isEmpty) &&
+        resolvedAvatar != null &&
+        resolvedAvatar.isNotEmpty) {
       updateData['avatar_url'] = resolvedAvatar;
     }
 
@@ -245,18 +274,19 @@ class AuthRemoteDataSource {
         .eq('id', user.id);
   }
 
-
   // ============================================================
   // Course Selection
   // ============================================================
 
   Future<List<CourseSelectionOption>> getCourseSelectionOptions() async {
     final user = currentUser;
+
     if (user == null) {
       throw const AuthException('You must be signed in.');
     }
 
     final context = await _studentAcademicContext(user.id);
+
     final response = await _supabase.client
         .from('course_offerings')
         .select('''
@@ -272,28 +302,34 @@ class AuthRemoteDataSource {
         .order('course_id')
         .order('group_id');
 
-    return response.map((item) {
-      final row = Map<String, dynamic>.from(item as Map);
-      final course = _mapValue(row['courses']);
-      final group = _mapValue(row['academic_groups']);
+    return response
+        .map((item) {
+          final row = Map<String, dynamic>.from(item as Map);
 
-      return CourseSelectionOption(
-        offeringId: row['id'].toString(),
-        courseId: row['course_id'].toString(),
-        courseName: course['name']?.toString().trim() ?? '',
-        instructor: row['instructor']?.toString().trim() ?? '',
-        groupCode: group['code']?.toString().trim() ?? '',
-      );
-    }).where((item) => item.courseName.isNotEmpty).toList();
+          final course = _mapValue(row['courses']);
+          final group = _mapValue(row['academic_groups']);
+
+          return CourseSelectionOption(
+            offeringId: row['id'].toString(),
+            courseId: row['course_id'].toString(),
+            courseName: course['name']?.toString().trim() ?? '',
+            instructor: row['instructor']?.toString().trim() ?? '',
+            groupCode: group['code']?.toString().trim() ?? '',
+          );
+        })
+        .where((item) => item.courseName.isNotEmpty)
+        .toList();
   }
 
   Future<List<String>> getSelectedCourseOfferingIds() async {
     final user = currentUser;
+
     if (user == null) {
       throw const AuthException('You must be signed in.');
     }
 
     final context = await _studentAcademicContext(user.id);
+
     final response = await _supabase.client
         .from('student_course_selections')
         .select('course_offering_id')
@@ -308,11 +344,13 @@ class AuthRemoteDataSource {
 
   Future<void> saveCourseSelections(List<String> offeringIds) async {
     final user = currentUser;
+
     if (user == null) {
       throw const AuthException('You must be signed in.');
     }
 
     final context = await _studentAcademicContext(user.id);
+
     final uniqueIds = offeringIds.toSet().toList();
 
     if (uniqueIds.isEmpty) {
@@ -353,20 +391,22 @@ class AuthRemoteDataSource {
         .eq('student_id', user.id)
         .eq('term_id', context.termId);
 
-    await _supabase.client.from('student_course_selections').insert(
-      uniqueIds
-          .map((offeringId) => {
-                'student_id': user.id,
-                'term_id': context.termId,
-                'course_offering_id': offeringId,
-              })
-          .toList(),
-    );
+    await _supabase.client
+        .from('student_course_selections')
+        .insert(
+          uniqueIds
+              .map(
+                (offeringId) => {
+                  'student_id': user.id,
+                  'term_id': context.termId,
+                  'course_offering_id': offeringId,
+                },
+              )
+              .toList(),
+        );
   }
 
-  Future<_StudentAcademicContext> _studentAcademicContext(
-    String userId,
-  ) async {
+  Future<_StudentAcademicContext> _studentAcademicContext(String userId) async {
     final term = await _supabase.client
         .from('academic_terms')
         .select('id')
@@ -384,19 +424,23 @@ class AuthRemoteDataSource {
         .maybeSingle();
 
     final level = profile?['level'];
+
     if (level == null) {
       throw const PostgrestException(message: 'Student level is not assigned.');
     }
 
-    return _StudentAcademicContext(
-      termId: term['id'].toString(),
-      level: level,
-    );
+    return _StudentAcademicContext(termId: term['id'].toString(), level: level);
   }
 
   Map<String, dynamic> _mapValue(Object? value) {
-    if (value is Map<String, dynamic>) return value;
-    if (value is Map) return Map<String, dynamic>.from(value);
+    if (value is Map<String, dynamic>) {
+      return value;
+    }
+
+    if (value is Map) {
+      return Map<String, dynamic>.from(value);
+    }
+
     return const {};
   }
 
@@ -439,12 +483,8 @@ class AuthRemoteDataSource {
   }
 }
 
-
 class _StudentAcademicContext {
-  const _StudentAcademicContext({
-    required this.termId,
-    required this.level,
-  });
+  const _StudentAcademicContext({required this.termId, required this.level});
 
   final String termId;
   final Object level;
