@@ -40,12 +40,6 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get managePreferences => 'إدارة تفضيلات التطبيق';
   @override
-  String get testNotification => 'اختبار الإشعارات';
-  @override
-  String get scheduledTestNotification => 'اختبار إشعار مجدول (بعد دقيقة)';
-  @override
-  String get testNotificationSent => 'تم إرسال إشعار تجريبي.';
-  @override
   String get receiveReminders => 'استلام التذكيرات والتحديثات';
   @override
   String get useDarkAppearance => 'استخدام المظهر الداكن';
@@ -202,7 +196,7 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get midterm => 'اختبار منتصف الفصل';
   @override
-  String get finalExam => 'اختبار نهائي';
+  String get finalExam => 'فاينل';
   @override
   String get examDate => 'التاريخ';
   @override
@@ -435,10 +429,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noLecturesFound => 'لا توجد محاضرات.';
   @override
   String get failedToLoadLectureProgress =>
-      'تعذر تحميل تقدم الدكتورات. حاول مرة أخرى.';
+      'تعذر تحميل تقدم المحاضرات. حاول مرة أخرى.';
   @override
   String get failedToUpdateLectureProgress =>
-      'تعذر تحديث تقدم الدكتور. حاول مرة أخرى.';
+      'تعذر تحديث تقدم المحاضرات. حاول مرة أخرى.';
   @override
   String get retry => 'إعادة المحاولة';
   @override
@@ -484,13 +478,13 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get noResourceAvailable => 'لا يوجد مورد متاح لهذا الدكتور.';
   @override
-  String get lectureSchedule => 'موعد الدكتور';
+  String get lectureSchedule => 'موعد المحاضرة';
   @override
   String get online => 'أونلاين';
   @override
   String get offline => 'حضوري';
   @override
-  String get lectureTime => 'موعد الدكتور';
+  String get lectureTime => 'موعد المحاضرة';
   @override
   String get failedToLoadSchedule => 'تعذر تحميل الجدول. حاول مرة أخرى.';
   @override
@@ -509,6 +503,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get networkError => 'تحقق من اتصال الإنترنت وحاول مرة أخرى.';
   @override
   String get databaseError => 'تعذر الاتصال بالخادم حاليًا. حاول مرة أخرى.';
+  @override
+  String get permissionDeniedError =>
+      'ليس لديك صلاحية للوصول إلى هذه البيانات.';
+  @override
+  String get rateLimitError =>
+      'تم تجاوز عدد المحاولات المسموح بها. حاول مرة أخرى بعد قليل.';
+  @override
+  String get serverError => 'الخادم غير متاح حاليًا. حاول مرة أخرى لاحقًا.';
+  @override
+  String get notFoundError => 'البيانات المطلوبة غير موجودة.';
+  @override
+  String get lectureEnded => 'انتهت';
   @override
   String get googleSignInFailed =>
       'تعذر تسجيل الدخول باستخدام Google. حاول مرة أخرى.';

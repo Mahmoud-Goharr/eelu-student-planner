@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/errors/app_error_localizer.dart';
 import '../../../profile/presentation/sync/profile_sync_bus.dart';
 import '../../domain/entities/course_selection_option.dart';
 import '../viewmodels/auth_cubit.dart';
@@ -60,7 +61,7 @@ class _CourseSelectionScreenState extends State<CourseSelectionScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _error = error.toString();
+        _error = AppErrorLocalizer.code(error);
         _loading = false;
       });
     }
@@ -167,7 +168,14 @@ class _CourseSelectionScreenState extends State<CourseSelectionScreen> {
                   child: Center(child: CircularProgressIndicator()),
                 )
               else if (_error != null)
-                _ErrorCard(message: _error!, onRetry: _load)
+                _ErrorCard(
+                  message: AppErrorLocalizer.message(
+                    context,
+                    _error,
+                    fallback: l10n.genericError,
+                  ),
+                  onRetry: _load,
+                )
               else if (courses.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 70),

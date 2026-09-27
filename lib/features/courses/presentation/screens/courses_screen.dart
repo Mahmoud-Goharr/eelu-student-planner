@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/errors/app_error_localizer.dart';
 
 import '../../../../core/widgets/shimmer/shimmer_card.dart';
 import '../../data/repositories/courses_repository_impl.dart';
@@ -37,7 +38,11 @@ class _CoursesView extends StatelessWidget {
             }
             if (state.status == CoursesStatus.failure) {
               return _Error(
-                message: state.errorMessage ?? AppLocalizations.of(context).failedToLoadCourses,
+                message: AppErrorLocalizer.message(
+                  context,
+                  state.errorMessage,
+                  fallback: AppLocalizations.of(context).failedToLoadCourses,
+                ),
                 onRetry: context.read<CoursesCubit>().getCourses,
               );
             }

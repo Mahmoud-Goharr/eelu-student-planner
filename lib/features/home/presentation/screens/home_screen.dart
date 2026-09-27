@@ -82,6 +82,7 @@ class _HomeContent extends StatelessWidget {
                   textColor: textColor,
                   secondaryText: secondaryText,
                   schedule: scheduleState.schedule,
+                  pauses: scheduleState.pauses,
                   loading:
                       scheduleState.status == ScheduleStatus.initial ||
                       scheduleState.status == ScheduleStatus.loading,

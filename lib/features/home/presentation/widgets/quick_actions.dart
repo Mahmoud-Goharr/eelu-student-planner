@@ -87,9 +87,7 @@ class QuickActions extends StatelessWidget {
         onTap: () => _openScreen(context, const LectureProgressScreen()),
       ),
       QuickActionItem(
-        title: isArabic(context)
-            ? 'المنتهي'
-            : 'Completed',
+        title: isArabic(context) ? 'التاسكات المنتهية' : 'Completed',
         icon: Icons.history_rounded,
         iconColor: Colors.brown,
         primaryColor: primaryColor,

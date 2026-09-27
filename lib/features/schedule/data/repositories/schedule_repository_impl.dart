@@ -1,6 +1,5 @@
 import '../../domain/repositories/schedule_repository.dart';
 import '../datasources/schedule_remote_data_source.dart';
-import '../models/schedule_model.dart';
 
 class ScheduleRepositoryImpl implements ScheduleRepository {
   ScheduleRepositoryImpl(this._remoteDataSource);
@@ -8,12 +7,12 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
   final ScheduleRemoteDataSource _remoteDataSource;
 
   @override
-  Future<List<ScheduleModel>> getSchedule() {
+  Future<ScheduleBundle> getSchedule() {
     return _remoteDataSource.getSchedule();
   }
 
   @override
-  Stream<List<ScheduleModel>> watchSchedule() {
+  Stream<ScheduleBundle> watchSchedule() {
     return _remoteDataSource.watchSchedule();
   }
 }

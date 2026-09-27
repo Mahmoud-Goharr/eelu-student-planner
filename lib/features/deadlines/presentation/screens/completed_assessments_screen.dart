@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/cache/planner_cache.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/errors/app_error_localizer.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../../../../core/widgets/shimmer/shimmer_card.dart';
 import '../../../tasks/data/datasources/tasks_remote_data_source.dart';
@@ -46,8 +47,11 @@ class _CompletedAssessmentsView extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(24),
                   child: Text(
-                    state.errorMessage ??
-                        (isArabic ? 'حدث خطأ.' : 'Something went wrong.'),
+                    AppErrorLocalizer.message(
+                      context,
+                      state.errorMessage,
+                      fallback: isArabic ? 'حدث خطأ.' : 'Something went wrong.',
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ),

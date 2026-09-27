@@ -71,32 +71,12 @@ windows/
 data_layer_snapshot.txt
 devtools_options.yaml
 
+# Android build outputs
+android/app/build/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Android signing credentials
+*.jks
+*.keystore
+android/key.properties
 
 

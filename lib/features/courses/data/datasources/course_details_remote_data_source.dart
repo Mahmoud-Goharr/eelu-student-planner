@@ -89,7 +89,15 @@ class CourseDetailsRemoteDataSource {
       if (name.isEmpty) continue;
 
       final email = row['instructor_email']?.toString().trim();
-      final key = name.toLowerCase();
+      final youtubeUrl = _cleanUrl(row['youtube_playlist_url']);
+      final materialUrl = _cleanUrl(row['materials_url']);
+      // Keep separate instructor entries when the same instructor has
+      // different YouTube playlists. This is important for A/B vs C/D.
+      final key = [
+        name.toLowerCase(),
+        (email ?? '').toLowerCase(),
+        youtubeUrl ?? '',
+      ].join('|');
       final groupCode = groupCodeById[row['group_id']?.toString() ?? ''] ?? '';
       final isStudent = row['id']?.toString() == offeringId;
 
@@ -101,8 +109,8 @@ class CourseDetailsRemoteDataSource {
             name: name,
             email: email?.isEmpty == true ? null : email,
             groupCodes: groupCode.isEmpty ? const [] : [groupCode],
-            youtubePlaylistUrl: _cleanUrl(row['youtube_playlist_url']),
-            materialsUrl: _cleanUrl(row['materials_url']),
+            youtubePlaylistUrl: youtubeUrl,
+            materialsUrl: materialUrl,
             isStudentInstructor: isStudent,
           ),
         );
@@ -113,8 +121,8 @@ class CourseDetailsRemoteDataSource {
           name: current.name,
           email: current.email,
           groupCodes: groups,
-          youtubePlaylistUrl: current.youtubePlaylistUrl ?? _cleanUrl(row['youtube_playlist_url']),
-          materialsUrl: current.materialsUrl ?? _cleanUrl(row['materials_url']),
+          youtubePlaylistUrl: current.youtubePlaylistUrl ?? youtubeUrl,
+          materialsUrl: current.materialsUrl ?? materialUrl,
           isStudentInstructor: current.isStudentInstructor || isStudent,
         );
       }

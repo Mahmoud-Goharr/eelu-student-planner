@@ -10,6 +10,7 @@ import '../../../../core/services/supabase_service.dart';
 import '../../../../core/widgets/shimmer/shimmer_card.dart';
 import '../../data/datasources/schedule_remote_data_source.dart';
 import '../../data/models/schedule_model.dart';
+import '../../data/models/schedule_pause_model.dart';
 import '../../data/repositories/schedule_repository_impl.dart';
 import '../viewmodels/schedule_cubit.dart';
 import '../viewmodels/schedule_state.dart';
@@ -61,13 +62,18 @@ class _ScheduleContentState extends State<_ScheduleContent> {
 
         if (state.status == ScheduleStatus.failure) {
           return _ScheduleError(
-            message: state.errorMessage,
+            message: AppErrorLocalizer.message(
+              context,
+              state.errorMessage,
+              fallback: AppLocalizations.of(context).failedToLoadSchedule,
+            ),
             onRetry: () => context.read<ScheduleCubit>().getSchedule(),
           );
         }
 
         return _ScheduleLoaded(
           schedule: state.schedule,
+          pauses: state.pauses,
           selectedDate: selectedDate,
           displayedMonth: displayedMonth,
           onPreviousMonth: () {
@@ -100,6 +106,7 @@ class _ScheduleContentState extends State<_ScheduleContent> {
 class _ScheduleLoaded extends StatelessWidget {
   const _ScheduleLoaded({
     required this.schedule,
+    required this.pauses,
     required this.selectedDate,
     required this.displayedMonth,
     required this.onPreviousMonth,
@@ -108,6 +115,7 @@ class _ScheduleLoaded extends StatelessWidget {
   });
 
   final List<ScheduleModel> schedule;
+  final List<SchedulePauseModel> pauses;
   final DateTime selectedDate;
   final DateTime displayedMonth;
   final VoidCallback onPreviousMonth;
@@ -120,10 +128,12 @@ class _ScheduleLoaded extends StatelessWidget {
     final primary = theme.colorScheme.primary;
     final textColor = theme.colorScheme.onSurface;
     final secondaryText = textColor.withValues(alpha: .6);
-    final selectedLectures = schedule
-        .where((item) =>
-            !_isBeforeScheduleStart(selectedDate, item.scheduleStartDate) &&
-            item.day == _dayName(selectedDate.weekday))
+    final selectedLectures = pauses.any((pause) => pause.appliesTo(selectedDate))
+        ? <ScheduleModel>[]
+        : schedule
+            .where((item) =>
+                !_isBeforeScheduleStart(selectedDate, item.scheduleStartDate) &&
+                item.day == _dayName(selectedDate.weekday))
         .toList()
       ..sort((a, b) => compareTimeStrings(a.startTime, b.startTime));
 
@@ -182,6 +192,7 @@ class _ScheduleLoaded extends StatelessWidget {
               selectedDate: selectedDate,
               primary: primary,
               schedule: schedule,
+              pauses: pauses,
               onDateSelected: onDateSelected,
             ),
             const SizedBox(height: 24),
@@ -360,6 +371,7 @@ class _CalendarCard extends StatelessWidget {
     required this.selectedDate,
     required this.primary,
     required this.schedule,
+    required this.pauses,
     required this.onDateSelected,
   });
 
@@ -367,6 +379,7 @@ class _CalendarCard extends StatelessWidget {
   final DateTime selectedDate;
   final Color primary;
   final List<ScheduleModel> schedule;
+  final List<SchedulePauseModel> pauses;
   final ValueChanged<DateTime> onDateSelected;
 
   @override
@@ -421,7 +434,8 @@ class _CalendarCard extends StatelessWidget {
 
               final date = DateTime(month.year, month.month, dayNumber);
               final isSelected = _sameDate(date, selectedDate);
-              final hasLectures = schedule.any(
+              final isPaused = pauses.any((pause) => pause.appliesTo(date));
+              final hasLectures = !isPaused && schedule.any(
                 (item) =>
                     !_isBeforeScheduleStart(date, item.scheduleStartDate) &&
                     item.day == _dayName(date.weekday),

@@ -35,9 +35,6 @@ abstract class AppLocalizations {
   String get calendar;
   String get managePreferences;
   String get receiveReminders;
-  String get testNotification;
-  String get testNotificationSent;
-  String get scheduledTestNotification;
   String get useDarkAppearance;
   String get editPersonalInformation;
   String get levelAndGroup;
@@ -278,6 +275,11 @@ abstract class AppLocalizations {
   String get genericError;
   String get networkError;
   String get databaseError;
+  String get permissionDeniedError;
+  String get rateLimitError;
+  String get serverError;
+  String get notFoundError;
+  String get lectureEnded;
   String get googleSignInFailed;
   String get invalidCredentials;
   String get emailNotConfirmed;

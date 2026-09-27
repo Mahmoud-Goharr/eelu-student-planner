@@ -76,11 +76,7 @@ class CourseInfoCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: FilledButton.icon(
-                      onPressed: () => _chooseInstructorResource(
-                        context,
-                        instructors,
-                        resource: _Resource.materials,
-                      ),
+                      onPressed: () => _openCourseMaterials(context),
                       icon: const Icon(Icons.folder_open_outlined),
                       label: Text(l10n.courseMaterials),
                     ),
@@ -99,6 +95,28 @@ class CourseInfoCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _openCourseMaterials(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
+    final value = course.materialsUrl?.trim() ?? '';
+
+    // Course Material is a shared resource for the course, so do not ask
+    // the student to choose an instructor here.
+    final url = Uri.tryParse(value);
+    if (url == null || !(url.isScheme('http') || url.isScheme('https'))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.noResourceAvailable)),
+      );
+      return;
+    }
+
+    final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+    if (!launched && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.noResourceAvailable)),
+      );
+    }
   }
 
   Future<void> _chooseInstructorResource(
@@ -183,7 +201,9 @@ class CourseInfoCard extends StatelessWidget {
         ? instructor.youtubePlaylistUrl
         : instructor.materialsUrl;
     final url = Uri.tryParse(value ?? '');
-    if (url != null) await launchUrl(url, mode: LaunchMode.externalApplication);
+    if (url == null || !(url.isScheme('http') || url.isScheme('https'))) return;
+
+    await launchUrl(url, mode: LaunchMode.externalApplication);
   }
 }
 

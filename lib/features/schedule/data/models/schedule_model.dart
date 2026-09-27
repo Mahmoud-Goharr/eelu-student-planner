@@ -11,6 +11,7 @@ class ScheduleModel {
     required this.section,
     required this.imageUrl,
     required this.scheduleStartDate,
+    required this.scheduleEndDate,
   });
 
   final String id;
@@ -24,6 +25,7 @@ class ScheduleModel {
   final String section;
   final String imageUrl;
   final DateTime scheduleStartDate;
+  final DateTime scheduleEndDate;
 
   factory ScheduleModel.fromMap(Map<String, dynamic> map) {
     final offering = _mapValue(map['course_offerings']);
@@ -53,6 +55,10 @@ class ScheduleModel {
             term['schedule_start_date']?.toString() ?? '',
           ) ??
           DateTime(2026, 9, 26),
+      scheduleEndDate: DateTime.tryParse(
+            term['end_date']?.toString() ?? '',
+          ) ??
+          DateTime(2027, 1, 31),
     );
   }
 
@@ -68,6 +74,7 @@ class ScheduleModel {
         'section': section,
         'image_url': imageUrl,
         'schedule_start_date': scheduleStartDate.toIso8601String(),
+        'schedule_end_date': scheduleEndDate.toIso8601String(),
       };
 
   factory ScheduleModel.fromCacheMap(Map<String, dynamic> map) {
@@ -86,6 +93,10 @@ class ScheduleModel {
             map['schedule_start_date']?.toString() ?? '',
           ) ??
           DateTime(2026, 9, 26),
+      scheduleEndDate: DateTime.tryParse(
+            map['schedule_end_date']?.toString() ?? '',
+          ) ??
+          DateTime(2027, 1, 31),
     );
   }
 

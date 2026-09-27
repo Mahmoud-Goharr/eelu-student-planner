@@ -1,5 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/errors/app_error_localizer.dart';
+
 import '../../../../core/cache/planner_cache.dart';
 import '../../../../core/connectivity/network_probe.dart';
 import '../../../../core/services/supabase_service.dart';
@@ -60,7 +62,7 @@ class LecturesCubit extends Cubit<LecturesState> {
               ? LecturesStatus.success
               : LecturesStatus.failure,
           lectures: cached.isNotEmpty ? cached : state.lectures,
-          errorMessage: cached.isNotEmpty ? 'offline' : error.toString(),
+          errorMessage: cached.isNotEmpty ? 'offline' : AppErrorLocalizer.code(error),
         ),
       );
     }
@@ -83,7 +85,7 @@ class LecturesCubit extends Cubit<LecturesState> {
       emit(
         state.copyWith(
           status: LecturesStatus.failure,
-          errorMessage: error.toString(),
+          errorMessage: AppErrorLocalizer.code(error),
         ),
       );
     }
@@ -110,7 +112,7 @@ class LecturesCubit extends Cubit<LecturesState> {
       emit(
         state.copyWith(
           status: LecturesStatus.failure,
-          errorMessage: error.toString(),
+          errorMessage: AppErrorLocalizer.code(error),
         ),
       );
     }
@@ -133,7 +135,7 @@ class LecturesCubit extends Cubit<LecturesState> {
       emit(
         state.copyWith(
           status: LecturesStatus.failure,
-          errorMessage: error.toString(),
+          errorMessage: AppErrorLocalizer.code(error),
         ),
       );
     }

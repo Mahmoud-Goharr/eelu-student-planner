@@ -155,14 +155,20 @@ class _CoursesProgressView extends StatelessWidget {
                 child: _CourseProgressCard(
                   course: course,
                   primary: primary,
-                  onTap: () {
-                    Navigator.of(context).push(
+                  onTap: () async {
+                    await Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (_) => LectureProgressScreen(
                           courseId: course.courseId,
                         ),
                       ),
                     );
+
+                    // Refresh the parent progress screen after returning from
+                    // the course details screen so the overall percentage
+                    // reflects the latest completed lecture immediately.
+                    if (!context.mounted) return;
+                    await context.read<LectureProgressCubit>().load();
                   },
                 ),
               ),

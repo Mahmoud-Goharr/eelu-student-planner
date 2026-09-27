@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/errors/app_error_localizer.dart';
+
 import '../../../profile/presentation/sync/profile_sync_bus.dart';
 
 import '../../domain/repositories/courses_repository.dart';
@@ -27,7 +29,7 @@ class CoursesCubit extends Cubit<CoursesState> {
     } catch (error) {
       emit(state.copyWith(
         status: CoursesStatus.failure,
-        errorMessage: error.toString(),
+        errorMessage: AppErrorLocalizer.code(error),
       ));
     }
   }

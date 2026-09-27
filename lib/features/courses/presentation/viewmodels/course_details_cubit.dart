@@ -1,5 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/errors/app_error_localizer.dart';
+
 import '../../domain/repositories/course_details_repository.dart';
 import 'course_details_state.dart';
 
@@ -33,7 +35,7 @@ class CourseDetailsCubit extends Cubit<CourseDetailsState> {
       emit(
         state.copyWith(
           status: CourseDetailsStatus.failure,
-          errorMessage: error.toString(),
+          errorMessage: AppErrorLocalizer.code(error),
         ),
       );
     }

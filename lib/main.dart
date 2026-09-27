@@ -20,7 +20,7 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
 import 'core/theme/theme_state.dart';
 import 'core/notifications/fcm_service.dart';
-import 'core/notifications/local_notification_scheduler.dart';
+import 'core/notifications/notification_realtime_service.dart';
 
 import 'features/auth/data/datasources/auth_remote_data_source.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
@@ -41,8 +41,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   final prefs = await SharedPreferences.getInstance();
-  final notificationsEnabled =
-      prefs.getBool('notifications_enabled') ?? true;
+  final notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
 
   if (!notificationsEnabled) {
     debugPrint(
@@ -105,7 +104,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     }
   }
 
-  debugPrint('[FCM] BACKGROUND HANDLER FINISHED | messageId=${message.messageId}');
+  debugPrint(
+    '[FCM] BACKGROUND HANDLER FINISHED | messageId=${message.messageId}',
+  );
 }
 
 Future<void> main() async {
@@ -156,17 +157,17 @@ Future<void> main() async {
   }
 
   // ------------------------------------------------------------
-  // Local notifications
+  // Realtime notification sync
   //
-  // IMPORTANT:
-  // A notification initialization problem must never prevent
-  // the application itself from starting.
+  // The server/worker is the source of truth for notifications.
+  // Realtime only refreshes the in-app notification state; FCM
+  // remains responsible for device push delivery.
   // ------------------------------------------------------------
 
   try {
-    await LocalNotificationScheduler.instance.initialize();
+    await NotificationRealtimeService.instance.initialize();
   } catch (error, stackTrace) {
-    debugPrint('Local notifications initialization failed: $error');
+    debugPrint('Notification Realtime initialization failed: $error');
     debugPrintStack(stackTrace: stackTrace);
   }
 

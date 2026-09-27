@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/cache/planner_cache.dart';
@@ -36,6 +38,11 @@ class ExamsRemoteDataSource {
           .where((id) => id.isNotEmpty)
           .toList();
 
+      developer.log(
+        'Exam enrollment query; selectedOfferings=${selectedOfferingIds.length}.',
+        name: 'NotificationDebug',
+      );
+
       if (selectedOfferingIds.isEmpty) {
         return [];
       }
@@ -49,6 +56,12 @@ class ExamsRemoteDataSource {
           .map((row) => row['course_id']?.toString() ?? '')
           .where((id) => id.isNotEmpty)
           .toSet();
+
+      developer.log(
+        'Exam query enrollment counts; selectedOfferings=${selectedOfferingIds.length}; '
+        'selectedCourses=${selectedCourseIds.length}',
+        name: 'NotificationDebug',
+      );
 
       if (selectedCourseIds.isEmpty) {
         return [];
@@ -68,6 +81,21 @@ class ExamsRemoteDataSource {
           .map((row) => _toExam(Map<String, dynamic>.from(row as Map)))
           .toList();
 
+      final invalidExamDateTimes = (response as List)
+          .where((row) {
+            final map = row as Map;
+            return DateTime.tryParse(map['exam_date']?.toString() ?? '') ==
+                    null ||
+                (map['exam_time']?.toString().isEmpty ?? true);
+          })
+          .length;
+
+      developer.log(
+        'Exam query returned ${exams.length} records; '
+        'invalidExamDateTimes=$invalidExamDateTimes',
+        name: 'NotificationDebug',
+      );
+
       await PlannerCache.instance.saveExams(user.id, exams);
       for (final exam in exams) {
         if (!exam.startTime.isAfter(EgyptTime.now())) {
@@ -76,8 +104,13 @@ class ExamsRemoteDataSource {
       }
 
       return exams;
-    } catch (_) {
+    } catch (error) {
       final cached = await PlannerCache.instance.loadExams(user.id);
+      developer.log(
+        'Exam query failed; errorType=${error.runtimeType}; '
+        'cachedExams=${cached.length}; usingCache=${cached.isNotEmpty}',
+        name: 'NotificationDebug',
+      );
       if (cached.isEmpty) rethrow;
       for (final exam in cached) {
         if (!exam.startTime.isAfter(EgyptTime.now())) {

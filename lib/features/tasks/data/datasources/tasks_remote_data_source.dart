@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -72,13 +73,58 @@ class TasksRemoteDataSource {
                 ')',
               )
               .inFilter('offering_id', selectedOfferingIds)
-              .order('quiz_date');
+          .order('quiz_date');
+
+      developer.log(
+        'Quiz query returned ${(quizzesResponse as List).length} rows '
+        'for ${selectedOfferingIds.length} selected offerings.',
+        name: 'NotificationDebug',
+      );
 
       final personalResponse = await _supabase.client
           .from('student_assignments')
           .select('id,title,description,due_date,is_completed,created_at')
           .eq('student_id', user.id)
           .order('due_date');
+
+      final invalidAssignmentDates = (assignmentsResponse as List)
+          .where(
+            (row) =>
+                DateTime.tryParse(
+                  (row as Map)['due_date']?.toString() ?? '',
+                ) ==
+                null,
+          )
+          .length;
+      final invalidQuizDateTimes = (quizzesResponse as List)
+          .where((row) {
+            final map = row as Map;
+            return DateTime.tryParse(map['quiz_date']?.toString() ?? '') ==
+                    null ||
+                (map['lecture_start_time']?.toString().isEmpty ?? true);
+          })
+          .length;
+      final invalidPersonalDates = (personalResponse as List)
+          .where(
+            (row) =>
+                DateTime.tryParse(
+                  (row as Map)['due_date']?.toString() ?? '',
+                ) ==
+                null,
+          )
+          .length;
+
+      developer.log(
+        'Task query enrollment counts; selectedOfferings=${selectedOfferingIds.length}; '
+        'selectedCourses=${selectedCourseIds.length}; '
+        'assignmentRows=${(assignmentsResponse as List).length}; '
+        'quizRows=${(quizzesResponse as List).length}; '
+        'personalAssignmentRows=${(personalResponse as List).length}; '
+        'invalidAssignmentDates=$invalidAssignmentDates; '
+        'invalidQuizDateTimes=$invalidQuizDateTimes; '
+        'invalidPersonalDates=$invalidPersonalDates',
+        name: 'NotificationDebug',
+      );
 
       final progressResponse = await _supabase.client
           .from('student_assignment_progress')
@@ -170,9 +216,33 @@ class TasksRemoteDataSource {
       }
 
       await PlannerCache.instance.saveTasks(user.id, tasks);
+
+      // Supabase is the source of truth. Reconcile local history against the
+      // complete remote task set so Dashboard deletions also remove old
+      // Assignment/Quiz entries from the app's Past Deadlines section.
+      await PlannerCache.instance.reconcileDeletedAcademicTasks(
+        user.id,
+        tasks
+            .where((task) => !task.isPersonal)
+            .map((task) => task.id)
+            .toSet(),
+      );
+
+      developer.log(
+        'Task repository result; tasks=${tasks.length}; '
+        'assignments=${tasks.where((task) => task.type == 'assignment').length}; '
+        'quizzes=${tasks.where((task) => task.type == 'quiz').length}; '
+        'personalAssignments=${tasks.where((task) => task.type == 'personal_assignment').length}',
+        name: 'NotificationDebug',
+      );
       return await _archiveAndKeepActive(user.id, tasks);
-    } catch (_) {
+    } catch (error) {
       final cached = await PlannerCache.instance.loadTasks(user.id);
+      developer.log(
+        'Task query failed; errorType=${error.runtimeType}; '
+        'cachedTasks=${cached.length}; usingCache=${cached.isNotEmpty}',
+        name: 'NotificationDebug',
+      );
       if (cached.isEmpty) rethrow;
       return await _archiveAndKeepActive(user.id, cached);
     }

@@ -59,10 +59,12 @@ class LecturesRemoteDataSource {
 
       if (selectedIds.isEmpty) return [];
 
-      responseQuery = responseQuery.inFilter(
-        'course_offering_id',
-        selectedIds,
-      );
+      responseQuery = responseQuery
+          .eq('entry_type', 'lecture')
+          .inFilter(
+            'course_offering_id',
+            selectedIds,
+          );
 
       final response = await responseQuery
           .order('day_of_week')

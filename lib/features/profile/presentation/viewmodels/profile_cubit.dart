@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/errors/app_error_localizer.dart';
+
 import '../../data/models/course_group_selection.dart';
 import '../../data/repositories/profile_repository_impl.dart';
 import '../../domain/repositories/profile_repository.dart';
@@ -13,7 +15,9 @@ class ProfileCubit extends Cubit<ProfileState> {
     : _repository = repository ?? ProfileRepositoryImpl(),
       super(const ProfileState()) {
     _syncSubscription = ProfileSyncBus.instance.changes.listen((_) {
-      if (!isClosed) getProfile();
+      if (!isClosed) {
+        getProfile();
+      }
     });
   }
 
@@ -21,10 +25,15 @@ class ProfileCubit extends Cubit<ProfileState> {
   StreamSubscription<void>? _syncSubscription;
 
   Future<void> getProfile() async {
+    if (isClosed) return;
+
     emit(state.copyWith(status: ProfileStatus.loading, clearError: true));
 
     try {
       final profile = await _repository.getProfile();
+
+      if (isClosed) return;
+
       var courseGroups = const <CourseGroupSelection>[];
 
       try {
@@ -32,6 +41,8 @@ class ProfileCubit extends Cubit<ProfileState> {
       } catch (_) {
         // Keep profile available if group details are temporarily unavailable.
       }
+
+      if (isClosed) return;
 
       emit(
         state.copyWith(
@@ -43,8 +54,13 @@ class ProfileCubit extends Cubit<ProfileState> {
         ),
       );
     } catch (error) {
+      if (isClosed) return;
+
       emit(
-        state.copyWith(status: ProfileStatus.failure, error: error.toString()),
+        state.copyWith(
+          status: ProfileStatus.failure,
+          error: AppErrorLocalizer.code(error),
+        ),
       );
     }
   }
@@ -54,19 +70,22 @@ class ProfileCubit extends Cubit<ProfileState> {
     required String groupCode,
     String? avatarFilePath,
   }) async {
+    if (isClosed) return;
+
     emit(state.copyWith(status: ProfileStatus.updating, clearError: true));
 
     if (state.isDemo) {
+      if (isClosed) return;
+
       emit(
         state.copyWith(
           status: ProfileStatus.updateSuccess,
-          profile: state.profile?.copyWith(
-            name: name,
-          ),
+          profile: state.profile?.copyWith(name: name),
           isDemo: true,
           clearError: true,
         ),
       );
+
       return;
     }
 
@@ -77,10 +96,15 @@ class ProfileCubit extends Cubit<ProfileState> {
         avatarFilePath: avatarFilePath,
       );
 
+      if (isClosed) return;
+
       var courseGroups = state.courseGroups;
+
       try {
         courseGroups = await _repository.getSelectedCourseGroups();
       } catch (_) {}
+
+      if (isClosed) return;
 
       emit(
         state.copyWith(
@@ -91,10 +115,18 @@ class ProfileCubit extends Cubit<ProfileState> {
           clearError: true,
         ),
       );
-      ProfileSyncBus.instance.notify();
+
+      if (!isClosed) {
+        ProfileSyncBus.instance.notify();
+      }
     } catch (error) {
+      if (isClosed) return;
+
       emit(
-        state.copyWith(status: ProfileStatus.failure, error: error.toString()),
+        state.copyWith(
+          status: ProfileStatus.failure,
+          error: AppErrorLocalizer.code(error),
+        ),
       );
     }
   }
@@ -102,6 +134,8 @@ class ProfileCubit extends Cubit<ProfileState> {
   @override
   Future<void> close() async {
     await _syncSubscription?.cancel();
+    _syncSubscription = null;
+
     return super.close();
   }
 }

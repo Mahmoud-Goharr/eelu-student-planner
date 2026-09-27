@@ -40,12 +40,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get managePreferences => 'Manage your app preferences';
   @override
-  String get testNotification => 'Test notification';
-  @override
-  String get scheduledTestNotification => 'Scheduled notification test (1 min)';
-  @override
-  String get testNotificationSent => 'Test notification sent.';
-  @override
   String get receiveReminders => 'Receive reminders and updates';
   @override
   String get useDarkAppearance => 'Use dark appearance';
@@ -501,6 +495,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get networkError => 'Check your internet connection and try again.';
   @override
   String get databaseError => 'Unable to connect to the server right now. Please try again.';
+  @override
+  String get permissionDeniedError => 'You do not have permission to access this data.';
+  @override
+  String get rateLimitError => 'Too many requests. Please try again in a little while.';
+  @override
+  String get serverError => 'The server is temporarily unavailable. Please try again later.';
+  @override
+  String get notFoundError => 'The requested data was not found.';
+  @override
+  String get lectureEnded => 'Ended';
   @override
   String get googleSignInFailed => 'Unable to sign in with Google. Please try again.';
   @override

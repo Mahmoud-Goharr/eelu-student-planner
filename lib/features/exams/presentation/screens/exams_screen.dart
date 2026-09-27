@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/errors/app_error_localizer.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../../../../core/utils/egypt_time.dart';
 import '../../../../core/widgets/shimmer/shimmer_card.dart';
@@ -64,7 +65,9 @@ class _ExamsViewState extends State<_ExamsView> {
                   state.errorMessage != null) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(state.errorMessage!),
+                    content: Text(
+                      AppErrorLocalizer.message(context, state.errorMessage),
+                    ),
                   ),
                 );
               }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/cache/planner_cache.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/errors/app_error_localizer.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../../../../core/widgets/shimmer/shimmer_card.dart';
 import '../../data/datasources/tasks_remote_data_source.dart';
@@ -99,7 +100,13 @@ class _TasksViewState extends State<_TasksView> {
                 state.errorMessage != null) {
               ScaffoldMessenger.of(context)
                 ..hideCurrentSnackBar()
-                ..showSnackBar(SnackBar(content: Text(state.errorMessage!)));
+                ..showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      AppErrorLocalizer.message(context, state.errorMessage),
+                    ),
+                  ),
+                );
             }
           },
           builder: (context, state) {
@@ -110,9 +117,11 @@ class _TasksViewState extends State<_TasksView> {
 
             if (state.status == TasksStatus.failure && state.tasks.isEmpty) {
               return _ErrorView(
-                message:
-                    state.errorMessage ??
-                    (isArabic ? 'حدث خطأ.' : 'Something went wrong.'),
+                message: AppErrorLocalizer.message(
+                  context,
+                  state.errorMessage,
+                  fallback: isArabic ? 'حدث خطأ.' : 'Something went wrong.',
+                ),
                 onRetry: () => context.read<TasksCubit>().getTasks(),
               );
             }

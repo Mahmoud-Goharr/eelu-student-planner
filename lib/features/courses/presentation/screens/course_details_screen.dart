@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/errors/app_error_localizer.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../domain/entities/course.dart';
@@ -52,7 +53,15 @@ class _View extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
           if (state.status == CourseDetailsStatus.failure) {
-            return Center(child: Text(state.errorMessage ?? l10n.genericError));
+            return Center(
+              child: Text(
+                AppErrorLocalizer.message(
+                  context,
+                  state.errorMessage,
+                  fallback: l10n.genericError,
+                ),
+              ),
+            );
           }
 
           final data = state.data!;

@@ -331,6 +331,42 @@ class PlannerCache {
     }
   }
 
+  /// Removes academic Assignment/Quiz history entries whose source rows
+  /// no longer exist in Supabase. Personal assignments and exams are kept.
+  /// This prevents a Dashboard deletion from leaving the deleted item in
+  /// the local "Past Deadlines" cache.
+  Future<void> reconcileDeletedAcademicTasks(
+    String userId,
+    Set<String> existingTaskIds,
+  ) async {
+    final prefs = await _prefs;
+    final existingHistory = await loadHistory(userId);
+
+    final filteredHistory = existingHistory.where((item) {
+      final isAcademicTask =
+          item.id.startsWith('assignment:') || item.id.startsWith('quiz:');
+
+      if (!isAcademicTask) return true;
+      return existingTaskIds.contains(item.id);
+    }).toList();
+
+    final completions = await loadCompletions(userId);
+    final validCompletionKeys = <String, bool>{
+      for (final entry in completions.entries)
+        if (!entry.key.startsWith('quiz:') || existingTaskIds.contains(entry.key))
+          entry.key: entry.value,
+    };
+
+    await prefs.setString(
+      _key(userId, 'history'),
+      jsonEncode(filteredHistory.map((value) => value.toMap()).toList()),
+    );
+    await prefs.setString(
+      _key(userId, 'completion'),
+      jsonEncode(validCompletionKeys),
+    );
+  }
+
   Future<void> _archive(String userId, PlannerHistoryItem item) async {
     final prefs = await _prefs;
     final existing = await loadHistory(userId);

@@ -1,7 +1,18 @@
 import '../../data/models/schedule_model.dart';
+import '../../data/models/schedule_pause_model.dart';
+
+class ScheduleBundle {
+  const ScheduleBundle({
+    required this.schedule,
+    required this.pauses,
+  });
+
+  final List<ScheduleModel> schedule;
+  final List<SchedulePauseModel> pauses;
+}
 
 abstract class ScheduleRepository {
-  Future<List<ScheduleModel>> getSchedule();
+  Future<ScheduleBundle> getSchedule();
 
-  Stream<List<ScheduleModel>> watchSchedule();
+  Stream<ScheduleBundle> watchSchedule();
 }

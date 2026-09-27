@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/errors/app_error_localizer.dart';
+
 import '../../data/models/notification_model.dart';
 import '../../domain/repositories/notifications_repository.dart';
 import '../sync/notifications_sync_bus.dart';
@@ -42,7 +44,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
       emit(
         state.copyWith(
           status: NotificationsStatus.failure,
-          errorMessage: error.toString(),
+          errorMessage: AppErrorLocalizer.code(error),
         ),
       );
     }

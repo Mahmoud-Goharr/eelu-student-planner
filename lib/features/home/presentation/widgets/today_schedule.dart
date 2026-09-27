@@ -5,6 +5,7 @@ import '../../../../core/utils/time_formatter.dart';
 import '../../../../core/utils/chronological_sort.dart';
 
 import '../../../schedule/data/models/schedule_model.dart';
+import '../../../schedule/data/models/schedule_pause_model.dart';
 import '../../../../core/localization/app_localizations.dart';
 
 class TodayScheduleCard extends StatelessWidget {
@@ -13,6 +14,7 @@ class TodayScheduleCard extends StatelessWidget {
     required this.textColor,
     required this.secondaryText,
     required this.schedule,
+    required this.pauses,
     required this.loading,
     required this.hasError,
     super.key,
@@ -22,6 +24,7 @@ class TodayScheduleCard extends StatelessWidget {
   final Color textColor;
   final Color secondaryText;
   final List<ScheduleModel> schedule;
+  final List<SchedulePauseModel> pauses;
   final bool loading;
   final bool hasError;
 
@@ -30,7 +33,10 @@ class TodayScheduleCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
     final today = EgyptTime.now();
-    final todayEntries = schedule
+    final isPausedToday = pauses.any((pause) => pause.appliesTo(today));
+    final todayEntries = isPausedToday
+        ? <ScheduleModel>[]
+        : schedule
         .where(
           (item) => item.day == _dayName(today.weekday),
         )
@@ -154,6 +160,8 @@ class _LectureItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textColor = Theme.of(context).colorScheme.onSurface;
+    final ended = _isEnded(lecture.endTime);
+    final l10n = AppLocalizations.of(context);
 
     return SizedBox(
       height: 82,
@@ -211,6 +219,17 @@ class _LectureItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (ended) ...[
+                  Text(
+                    l10n.lectureEnded,
+                    style: TextStyle(
+                      color: secondaryText,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                ],
                 Text(
                   lecture.courseName,
                   maxLines: 1,
@@ -236,14 +255,23 @@ class _LectureItem extends StatelessWidget {
               ],
             ),
           ),
-          Icon(
-            Icons.arrow_forward_ios_rounded,
-            size: 17,
-            color: secondaryText,
-          ),
+          if (!ended)
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 17,
+              color: secondaryText,
+            ),
         ],
       ),
     );
+  }
+
+  bool _isEnded(String value) {
+    final parts = value.split(':');
+    final hour = int.tryParse(parts.first) ?? 0;
+    final minute = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+    final now = EgyptTime.now();
+    return now.hour * 60 + now.minute >= hour * 60 + minute;
   }
 
   String _formatTime(BuildContext context, String value) =>

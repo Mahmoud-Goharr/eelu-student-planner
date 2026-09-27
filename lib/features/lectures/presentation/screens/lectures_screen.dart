@@ -3,6 +3,7 @@ import '../../../../core/utils/egypt_time.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/errors/app_error_localizer.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../../data/datasources/lectures_remote_data_source.dart';
 import '../../data/models/lecture_model.dart';
@@ -57,7 +58,13 @@ class _LecturesViewState extends State<_LecturesView> {
         } else if (state.status == LecturesStatus.failure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.errorMessage ?? 'Something went wrong'),
+              content: Text(
+                AppErrorLocalizer.message(
+                  context,
+                  state.errorMessage,
+                  fallback: 'Something went wrong',
+                ),
+              ),
             ),
           );
         }

@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/errors/app_error_localizer.dart';
+
 import '../../../../core/cache/planner_cache.dart';
 import '../../../../core/connectivity/network_probe.dart';
 import '../../../../core/services/supabase_service.dart';
@@ -117,7 +119,7 @@ class AllDeadlinesCubit extends Cubit<AllDeadlinesState> {
         emit(
           AllDeadlinesState(
             status: AllDeadlinesStatus.failure,
-            errorMessage: error.toString(),
+            errorMessage: AppErrorLocalizer.code(error),
           ),
         );
       }
